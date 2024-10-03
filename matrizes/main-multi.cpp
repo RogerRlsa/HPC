@@ -7,6 +7,7 @@
 #include <cstring>
 #include <chrono>
 #include <rural-mat.hpp>
+#include <omp.h>
 using namespace std;
 
 void saveLog(string logFile,
@@ -109,6 +110,8 @@ int main (int ac, char **av){
     memset(C.MAT, 0x00,  C.m *  C.n * sizeof(double));
     mem =  (A.m *  A.n + B.m *  B.n + C.m *  C.n) * sizeof(double);
     cout << "Total de memória usada: " << (mem / 1048576) << " Mbytes" << endl;
+
+    omp_set_num_threads(nThreads);
 
     matrix_multi(&C, &A, &B);
     if (show){

@@ -87,7 +87,21 @@ void matrix_trans(stMatrix *B, stMatrix *A, unsigned int threads, double **ptr){
 
 void matrix_multi(stMatrix *C, stMatrix *A, stMatrix *B){
 
-        for (int j = 0; j < C->n; j++){
+unsigned int a = 0,
+             b = 0;
+
+#pragma omp parallel private (a,b)
+{
+    unsigned int subsize = C->n / omp_get_num_threads(),
+                 residual = 0;
+
+    if (omp_get_thread_num() == omp_get_num_threads()-1)
+        residual = C->n % omp_get_num_threads();
+    
+    a = subsize * omp_get_thread_num();
+    b = subsize * (omp_get_thread_num()+1) + residual;
+
+        for (int j = a; j < b; j++){
             for (int i = 0; i < C->m; i++){
                 double c = 0.0f;
                 for (int jA = 0; jA < A->m; jA++){
@@ -101,7 +115,7 @@ void matrix_multi(stMatrix *C, stMatrix *A, stMatrix *B){
             }//end-for (int j = 0; j < mLattice->height; j++){
 
         }//end-void InitRandness(tpLattice *mLattice, float p){
-
+}
 
 }
 
