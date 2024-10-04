@@ -45,26 +45,55 @@ bool find_binary(unsigned long high,
                  unsigned long *vet,
                  unsigned long *out,
                  double *elapsedtime){
-    unsigned long l = 0, h = high;
+    
     bool found = false;
-    while ((l <= h) && (!found)){
-        unsigned long pm = (h + l) / 2;
+
+    unsigned long l_bound = 0,
+                  h_bound = high;
+    
+    omp_lock_t lock;
+    omp_init_lock(&lock);
+
+    double et;
+
+#pragma omp parallel private(l_bound, h_bound, et) shared(vet, out, value, found, elapsedtime)
+{
+    et = omp_get_wtime();
+    
+    unsigned int subsize = high / omp_get_num_threads(),
+                 residual = 0;
+
+    if (omp_get_thread_num() == omp_get_num_threads() - 1){
+        residual = high % omp_get_num_threads();
+    }
+
+    l_bound = omp_get_thread_num() * subsize;
+    h_bound= ((omp_get_thread_num() + 1) * subsize) + residual;
+    
+    while ((l_bound <= h_bound) && (!found)){
+        unsigned long pm = (h_bound + l_bound) / 2;
         if (vet[pm] == value){
-            *out = pm;
-            found = true;
+            omp_set_lock(&lock);
+                *out = pm;
+                found = true;
+            omp_unset_lock(&lock);
         }else if(value < vet[pm]){
             if (pm > 0)
-                h = pm - 1;
+                h_bound = pm - 1;
             else{
-                h = 0;
-                l = 1;
+                h_bound = 0;
+                l_bound = 1;
             }
 
         }else
-            l = pm + 1;
+            l_bound = pm + 1;
         //cout << l << "," << h << "," << pm << endl;
     }//while (l < h) && (!found){
 
+    et = omp_get_wtime() - et;
+    elapsedtime[omp_get_thread_num()] = et;
+}
+    omp_destroy_lock(&lock);
 
     return found;
 }
