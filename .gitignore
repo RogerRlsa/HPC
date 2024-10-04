@@ -3,3 +3,4 @@
 *.bin
 *.csv
 .Rproj.user
+.vscode
