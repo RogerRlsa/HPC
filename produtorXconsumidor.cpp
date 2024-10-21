@@ -16,11 +16,17 @@ void produtor(int n, int itens[])
 
         omp_set_lock(&vazio);
 
-        f = (f+1)%n;
         itens[f] = 1;
+        f = (f+1)%n;
 
-        omp_unset_lock(&cheio);
+        if (f != 0)
+        {
+            omp_unset_lock(&vazio);
+        }else{
+            omp_unset_lock(&cheio);
+        }
 
+        cout << 'Produtor: posição'<< f-1 << ' -> ' << itens[f-1] << endl;
     }
 }
 
@@ -32,11 +38,17 @@ void consumidor(int n, int itens[])
 
         omp_set_lock(&cheio);
 
-        f = (f+1)%n;
         itens[f] = 0;
+        f = (f+1)%n;
 
-        omp_unset_lock(&vazio);
+        if (f!=0)
+        {
+            omp_unset_lock(&cheio);
+        }else{
+            omp_unset_lock(&vazio);
+        }
 
+        cout << 'Consumidor: posição'<< f-1 << ' -> ' << itens[f-1] << endl;
     }
 }
 
