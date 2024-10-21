@@ -2,11 +2,11 @@
 #include <iostream>
 #include <unistd.h>
 #include <cstring>
-
+#include <assert.h>
 using namespace std;
 
 #define nThreads 2
-#define N 10
+#define N 10000
 
 omp_lock_t cheio;
 omp_lock_t vazio;
@@ -19,10 +19,11 @@ void produtor(int n, int itens[])
 
         omp_set_lock(&vazio);
 
+        assert(itens[f] == 0);
         itens[f] = 1;
         f = (f+1)%n;
 
-        usleep(100000);
+        //usleep(100000);
         int pos = (f==0)? f:f-1;
         cout << "Produtor: posição " << pos << " -> " << itens[pos] << endl;
 
@@ -43,11 +44,11 @@ void consumidor(int n, int itens[])
     {
 
         omp_set_lock(&cheio);
-
+        assert(itens[f] == 1);
         itens[f] = 0;
         f = (f+1)%n;
 
-        usleep(100000);
+        //usleep(100000);
         int pos = (f==0)? f:f-1;
         cout << "Consumidor: posição " << pos << " -> " << itens[pos] << endl;
 
