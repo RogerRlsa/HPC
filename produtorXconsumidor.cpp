@@ -1,10 +1,13 @@
 #include <omp.h>
+#include <iostream>
+#include <unistd.h>
 #include <cstring>
+
+using namespace std;
 
 #define nThreads 2
 #define N 10
 
-omp_lock_t mutex;
 omp_lock_t cheio;
 omp_lock_t vazio;
 
@@ -19,6 +22,10 @@ void produtor(int n, int itens[])
         itens[f] = 1;
         f = (f+1)%n;
 
+        usleep(100000);
+        int pos = (f==0)? f:f-1;
+        cout << "Produtor: posição " << pos << " -> " << itens[pos] << endl;
+
         if (f != 0)
         {
             omp_unset_lock(&vazio);
@@ -26,7 +33,6 @@ void produtor(int n, int itens[])
             omp_unset_lock(&cheio);
         }
 
-        cout << 'Produtor: posição'<< f-1 << ' -> ' << itens[f-1] << endl;
     }
 }
 
@@ -41,14 +47,17 @@ void consumidor(int n, int itens[])
         itens[f] = 0;
         f = (f+1)%n;
 
+        usleep(100000);
+        int pos = (f==0)? f:f-1;
+        cout << "Consumidor: posição " << pos << " -> " << itens[pos] << endl;
+
         if (f!=0)
         {
             omp_unset_lock(&cheio);
         }else{
             omp_unset_lock(&vazio);
         }
-
-        cout << 'Consumidor: posição'<< f-1 << ' -> ' << itens[f-1] << endl;
+        
     }
 }
 
@@ -56,11 +65,10 @@ int main(void)
 {
     int n = N;
     int itens[n];
-    memset(itens, 0, n);
+    memset(itens, 0, n*sizeof(int));
 
     omp_set_num_threads(nThreads);
 
-    omp_init_lock(&mutex);
     omp_init_lock(&cheio);
     omp_init_lock(&vazio);
 
@@ -70,11 +78,11 @@ int main(void)
 {
     #pragma omp sections nowait
     {
-        #pragma section
+        #pragma omp section
         {
             produtor(n, itens);
         }
-        #pragma section
+        #pragma omp section
         {
             consumidor(n, itens);
         }
@@ -83,7 +91,6 @@ int main(void)
 
     omp_destroy_lock(&vazio);
     omp_destroy_lock(&cheio);
-    omp_destroy_lock(&mutex);
 
     return 0;
 }
