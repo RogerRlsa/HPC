@@ -19,11 +19,14 @@ int criarMatriz(int m, int n, Node matriz[m][n])
             matriz[i][j].dis_percorrida = 0;
             matriz[i][j].id = j+(i*m);
             matriz[i][j].viz = 0;
+            matriz[i][j].pai = NULL;
             if ((i>20 && i<m-20) && (j==36))
             {
                 matriz[i][j].andavel = 0;
             }
+            //printf("%d ",matriz[i][j].id);
         }
+        //printf("\n");
     }
     return fim;
 }
@@ -55,6 +58,7 @@ void printMatriz(int m, int n, Node M[m][n], int fim, int ini_i, int ini_j)
 int main(int ac, char** av)
 {
     int m =  atoi(av[1]), n = atoi(av[2]);
+    int nT = atoi(av[3]);
     Node matriz[m][n];
 
     srand(234141);
@@ -65,6 +69,7 @@ int main(int ac, char** av)
 
     printMatriz(m,n,matriz,fim,i,j);
 
+    omp_set_num_threads(nT);
     A_estrela(m, n, matriz, i, j, fim);
     
 

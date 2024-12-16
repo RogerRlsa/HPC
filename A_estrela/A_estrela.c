@@ -118,58 +118,78 @@ Node* A_estrela(int m, int n, Node A[m][n], int i, int j, int fim)
     el.i = i;
     el.j = j;
     el.val = &A[i][j];
-    el.val->pai = el.val;
+    el.val->pai = NULL;
     push_heap(&h, el);
 
     while(!is_empty(&h))
     {
         pop_heap(&h, &el);
+        if(el.val->id == fim)
+        {
+            free(h.list);
+            printf("Caminho encontrado!!!");
+            return el.val;
+        }
+        el.val->viz = 1;
 
+        Node* vizinho;
+        Heap_element viz_el;
         // Adicionar os vizinhos do nó atual à heap
+        #pragma omp parallel for
         for (int j = 0; j < 4; j++)
         {
-            if(el.val->id == fim)
-            {
-                free(h.list);
-                printf("Caminho encontrado!!!");
-                return el.val;
-            }
-            el.val->viz = 1;
-
-            Node* vizinho;
-            Heap_element viz_el;
+            int teste = 0;
             switch (j)
             {
             case 0:
                 if(el.i==0)
-                    continue;
+                {
+                    teste = 1;
+                    break;
+                }
                 vizinho = &A[el.i-1][el.j];
                 viz_el.i = el.i-1;
                 viz_el.j = el.j;
                 break;
             case 1:
                 if(el.j==0)
-                    continue;
+                {
+                    teste = 1;
+                    break;
+                }
                 vizinho = &A[el.i][el.j-1];
                 viz_el.i = el.i;
                 viz_el.j = el.j-1;
                 break;
             case 2:
                 if(el.i==m-1)
-                    continue;
+                {
+                    teste = 1;
+                    break;
+                }
                 vizinho = &A[el.i+1][el.j];
                 viz_el.i = el.i+1;
                 viz_el.j = el.j;
                 break;
             case 3:
                 if(el.j==n-1)
-                    continue;
+                {
+                    teste = 1;
+                    break;
+                }
                 vizinho = &A[el.i][el.j+1];
                 viz_el.i = el.i;
                 viz_el.j = el.j+1;
                 break;
             }
-            if (vizinho->andavel==1 && (vizinho->id != el.val->pai->id))
+            if(teste)
+            {
+                teste = 0;
+                break;
+            }
+            //printf("a");
+            //#pragma omp 
+            if (vizinho->andavel==1 && (vizinho->viz==0))
             {
                 viz_el.val = vizinho;
                 viz_el.val->pai = el.val;
