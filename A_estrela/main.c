@@ -55,10 +55,30 @@ void printMatriz(int m, int n, Node M[m][n], int fim, int ini_i, int ini_j)
     }
 }
 
+void printCaminho(int m, int n, Node M[m][n], Node* no)
+{
+    printf("\n");
+    for (int i = 0; i < m; i++)
+    {
+        for (int j = 0; j < n; j++)
+        {
+            printf("%d ", M[i][j].id);
+        }
+        printf("\n");
+    }
+    printf("\n");
+    while (no->pai)
+    {
+        printf("%d - ", no->id);
+        no = no->pai;
+    }
+    
+}
+
 int main(int ac, char** av)
 {
     int m =  atoi(av[1]), n = atoi(av[2]);
-    int nT = atoi(av[3]);
+    int nT = 4;
     Node matriz[m][n];
 
     srand(234141);
@@ -70,8 +90,13 @@ int main(int ac, char** av)
     printMatriz(m,n,matriz,fim,i,j);
 
     omp_set_num_threads(nT);
-    A_estrela(m, n, matriz, i, j, fim);
+    Node* no = A_estrela_parallel(m, n, matriz, i, j, fim);
     
+    printCaminho(m,n,matriz, no);
+
+    no = A_estrela_seq(m, n, matriz, i, j, fim);
+    
+    printCaminho(m,n,matriz, no);
 
     return 0;
 }
