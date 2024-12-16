@@ -61,8 +61,6 @@ int main(int ac, char** av)
     int i = rand()%m;
     int j = rand()&n;
 
-
-
     int fim = criarMatriz(m, n, matriz);
 
     printMatriz(m,n,matriz,fim,i,j);

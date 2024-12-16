@@ -29,13 +29,14 @@ typedef struct heap
 
 void push_heap(Heap* h, Heap_element el)
 {
+    //printf("B");
     h->list[h->vazio] = el;
     int pos = h->vazio;
     h->vazio = h->vazio+1;
 
     int min_pos = 0;
     Heap_element temp;
-    while (!min_pos && pos>1)
+    while (!min_pos && (pos/2)>=1)
     {
         min_pos = 1;
         if(h->list[pos].key < h->list[pos/2].key)
@@ -71,7 +72,7 @@ void pop_heap(Heap* h, Heap_element* el)
     int max_pos = 0;
     int pos = 1;
     Heap_element temp;
-    while (!max_pos || (pos*2) >= h->vazio)
+    while (!max_pos && (pos*2) < h->vazio)
     {
         max_pos = 1;
         if(h->list[pos*2].key < h->list[(pos*2)+1].key)
@@ -111,7 +112,7 @@ Node* A_estrela(int m, int n, Node A[m][n], int i, int j, int fim)
     h.size = (m*n)+1;
     h.list = (Heap_element*) malloc(h.size*sizeof(Heap_element));
     // adicionar o ponto de partida na heap
-        
+    //printf("A");
     Heap_element el;
     el.key = 0;
     el.i = i;
@@ -124,7 +125,8 @@ Node* A_estrela(int m, int n, Node A[m][n], int i, int j, int fim)
     {
         pop_heap(&h, &el);
 
-        for(int i=0; i<8; i++)
+        // Adicionar os vizinhos do nó atual à heap
+        for (int j = 0; j < 4; j++)
         {
             if(el.val->id == fim)
             {
@@ -133,53 +135,50 @@ Node* A_estrela(int m, int n, Node A[m][n], int i, int j, int fim)
                 return el.val;
             }
             el.val->viz = 1;
-            
-            // Adicionar os vizinhos do nó atual à heap
-            for (int j = 0; j < 4; j++)
+
+            Node* vizinho;
+            Heap_element viz_el;
+            switch (j)
             {
-                Node* vizinho;
-                Heap_element viz_el;
-                switch (i)
-                {
-                case 0:
-                    if(el.i==0)
-                        continue;
-                    vizinho = &A[el.i-1][el.j];
-                    viz_el.i = el.i-1;
-                    viz_el.j = el.j;
-                    break;
-                case 1:
-                    if(el.j==0)
-                        continue;
-                    vizinho = &A[el.i][el.j-1];
-                    viz_el.i = el.i;
-                    viz_el.j = el.j-1;
-                    break;
-                case 2:
-                    if(el.i==m-1)
-                        continue;
-                    vizinho = &A[el.i+1][el.j];
-                    viz_el.i = el.i+1;
-                    viz_el.j = el.j;
-                    break;
-                case 3:
-                    if(el.j==n-1)
-                        continue;
-                    vizinho = &A[el.i][el.j+1];
-                    viz_el.i = el.i;
-                    viz_el.j = el.j+1;
-                    break;
-                }
-                if (vizinho->andavel==1 && (vizinho->id != el.val->pai->id))
-                {
-                    viz_el.val = vizinho;
-                    viz_el.val->pai = el.val;
-                    viz_el.key = heuristica(viz_el, el);
-                    viz_el.val->dis_percorrida = el.val->dis_percorrida+10;
-                    viz_el.key += viz_el.val->dis_percorrida;
-                    
-                    push_heap(&h, viz_el);
-                }
+            case 0:
+                if(el.i==0)
+                    continue;
+                vizinho = &A[el.i-1][el.j];
+                viz_el.i = el.i-1;
+                viz_el.j = el.j;
+                break;
+            case 1:
+                if(el.j==0)
+                    continue;
+                vizinho = &A[el.i][el.j-1];
+                viz_el.i = el.i;
+                viz_el.j = el.j-1;
+                break;
+            case 2:
+                if(el.i==m-1)
+                    continue;
+                vizinho = &A[el.i+1][el.j];
+                viz_el.i = el.i+1;
+                viz_el.j = el.j;
+                break;
+            case 3:
+                if(el.j==n-1)
+                    continue;
+                vizinho = &A[el.i][el.j+1];
+                viz_el.i = el.i;
+                viz_el.j = el.j+1;
+                break;
+            }
+            if (vizinho->andavel==1 && (vizinho->id != el.val->pai->id))
+            {
+                viz_el.val = vizinho;
+                viz_el.val->pai = el.val;
+                viz_el.key = heuristica(viz_el, el);
+                viz_el.val->dis_percorrida = el.val->dis_percorrida+10;
+                viz_el.key += viz_el.val->dis_percorrida;
+                //printf("%d %d\n",viz_el.i, viz_el.j);
+
+                push_heap(&h, viz_el);
             }
         }
     }
